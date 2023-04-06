@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.jluque.reactor.app.dto.Usuario;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @SpringBootApplication
 public class SpringBootReactorApplication implements CommandLineRunner {
@@ -24,12 +25,18 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		iterableMap();
+		List<String> usuarios = findUsers();
+
+//		iterableMap(usuarios);
+//		iterableFlatMap(usuarios);
+
+		List<Usuario> usuariosList = findUserDto();
+//		iterableToStringMapping(usuariosList);
+
+		usersfluxToMonoMapping(usuariosList);
 	}
 
-	
-	public void iterableFlatMap() throws Exception {
-
+	public List<String> findUsers() throws Exception {
 		List<String> usuariosList = new ArrayList<>();
 		usuariosList.add("Andres Fulano");
 		usuariosList.add("Pedro Fulano");
@@ -40,72 +47,89 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 		usuariosList.add("Manuel Mengano");
 		usuariosList.add("Bruce Lee");
 		usuariosList.add("Bruce Willis");
+		return usuariosList;
+	}
 
+	public List<Usuario> findUserDto() throws Exception {
+		List<Usuario> usuariosList = new ArrayList<>();
+		usuariosList.add(new Usuario("Andres", "Fulano"));
+		usuariosList.add(new Usuario("Pedro", "Fulano"));
+		usuariosList.add(new Usuario("Maria", "Mengano"));
+		usuariosList.add(new Usuario("Diego", "Maradona"));
+		usuariosList.add(new Usuario("Juan", "perez"));
+		usuariosList.add(new Usuario("Raul", "Sultano"));
+		usuariosList.add(new Usuario("Manuel", "Mengano"));
+		usuariosList.add(new Usuario("Bruce", "Lee"));
+		usuariosList.add(new Usuario("Bruce", "Willis"));
+		return usuariosList;
+	}
+
+	public void usersfluxToMonoMapping(List<Usuario> userList) throws Exception {
+		log.info(new Object() {}.getClass().getEnclosingMethod().getName());
+		Flux.fromIterable(userList)
+				.collectList()
+				.subscribe(lista -> {
+						lista.forEach(x -> log.info(x.toString()));
+					});
+	}
+
+	public void iterableToStringMapping(List<Usuario> usuariosList) throws Exception {
+		Flux.fromIterable(usuariosList).map(
+				usuario -> usuario.getNombre().toUpperCase().concat(" ").concat(usuario.getApellido().toUpperCase()))
+				.flatMap(nombre -> {
+					if (nombre.contains("Bruce".toUpperCase())) {
+						return Mono.just(nombre);
+					} else {
+						return Mono.empty();
+					}
+				}).map(nombre -> nombre.toLowerCase())
+				.subscribe(u -> log.info("Subscribe: {}", u), error -> log.error(error.getMessage()));
+	}
+
+	public void iterableFlatMap(List<String> usuariosList) throws Exception {
 		Flux.fromIterable(usuariosList)
 				.map(nombre -> new Usuario(nombre.split(" ")[0].toUpperCase(), nombre.split(" ")[1].toUpperCase()))
-				.filter(n -> n.getNombre().equalsIgnoreCase("Bruce")).doOnNext(usuario -> {
-					if (usuario == null)
-						throw new RuntimeException("Nombres no pueden ser vacios");
-				})
-				.doOnNext(e -> log.info(e.getNombre().concat(", ").concat(e.getApellido())))
-				.subscribe(
-					e -> log.info("Subscribe nombres: " + e.toString()), 
-					error -> log.error(error.getMessage()),
-					new Runnable() {
-						@Override
-						public void run() {
-							log.info("Finalizo la ejecucion del observable");
-						}
-					});
-
+				.flatMap(usuario -> {
+					if (usuario.getNombre().equalsIgnoreCase("bruce")) {
+						return Mono.just(usuario);
+					} else {
+						return Mono.empty();
+					}
+				}).map(usuario -> {
+					usuario.setNombre(usuario.getNombre().toLowerCase());
+					return usuario;
+				}).subscribe(u -> log.info("Subscribe: {}", u), error -> log.error(error.getMessage()));
 	}
-	
-	public void iterableMap() throws Exception {
-		
-		List<String> usuariosList = new ArrayList<>();
-		usuariosList.add("Andres Fulano");
-		usuariosList.add("Pedro Fulano");
-		usuariosList.add("Maria Mengano");
-		usuariosList.add("Diego Maradona");
-		usuariosList.add("Juan perez");
-		usuariosList.add("Raul Sultano");
-		usuariosList.add("Manuel Mengano");
-		usuariosList.add("Bruce Lee");
-		usuariosList.add("Bruce Willis");
-		
+
+	public void iterableMap(List<String> usuariosList) throws Exception {
+
 		Flux<String> nombres = Flux.fromIterable(usuariosList);
-		
+
 		Flux<Usuario> usuariosFlux = nombres
 				.map(nombre -> new Usuario(nombre.split(" ")[0].toUpperCase(), nombre.split(" ")[1].toUpperCase()))
 				.filter(n -> n.getNombre().equalsIgnoreCase("Bruce")).doOnNext(usuario -> {
 					if (usuario == null)
 						throw new RuntimeException("Nombres no pueden ser vacios");
-				})
-				.map(usuario -> {
+				}).map(usuario -> {
 					usuario.setNombre(usuario.getNombre().toLowerCase());
 					return usuario;
-				})
-				.doOnNext(e -> log.info(e.getNombre().concat(", ").concat(e.getApellido())));
-		
-		nombres.subscribe(
-				e -> log.info("Subscribe nombres: " + e.toString()), 
-				error -> log.error(error.getMessage()),
+				}).doOnNext(e -> log.info(e.getNombre().concat(", ").concat(e.getApellido())));
+
+		nombres.subscribe(e -> log.info("Subscribe nombres: " + e.toString()), error -> log.error(error.getMessage()),
 				new Runnable() {
 					@Override
 					public void run() {
 						log.info("Finalizo la ejecucion del observable");
 					}
 				});
-		
-		usuariosFlux.subscribe(
-				e -> log.info("Subscribe usuarios: " + e.toString()),
-				error -> log.error(error.getMessage()), 
-				new Runnable() {
+
+		usuariosFlux.subscribe(e -> log.info("Subscribe usuarios: " + e.toString()),
+				error -> log.error(error.getMessage()), new Runnable() {
 					@Override
 					public void run() {
 						log.info("Finalizo la ejecucion del observable");
 					}
 				});
-		
+
 	}
 }
