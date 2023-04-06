@@ -13,9 +13,9 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class UsuarioComentarios {
+public class PosteoDto {
 
-	private Usuario usuario;
-	private Comentarios comentarios;
+	private UsuarioDto usuario;
+	private ComentarioDto comentarios;
 
 }

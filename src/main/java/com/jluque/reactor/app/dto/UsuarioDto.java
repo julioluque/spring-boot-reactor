@@ -13,8 +13,9 @@ import lombok.ToString;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Usuario {
+public class UsuarioDto {
 
 	private String nombre;
 	private String apellido;
+	
 }

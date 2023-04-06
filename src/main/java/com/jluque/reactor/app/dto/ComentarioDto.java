@@ -14,11 +14,11 @@ import lombok.ToString;
 @ToString
 @Builder
 @AllArgsConstructor
-public class Comentarios {
+public class ComentarioDto {
 
 	private List<String> comentarios;
 
-	public Comentarios() {
+	public ComentarioDto() {
 		this.comentarios = new ArrayList<>();
 	}
 
