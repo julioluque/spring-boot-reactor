@@ -2,6 +2,7 @@ package com.jluque.reactor.app.service;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -214,12 +215,27 @@ public class ReactorService {
 	 * 
 	 * @Subscribe: NoBoqueante, hilos corriendo en background. Interacalamos
 	 *             con @BlockLast.
-	 * @BlockLast: Bloqueante. hilos corriendo en rpimer plano. Intercala
-	 *             con @Subscribe
+	 * @BlockLast: Bloqueante. No recomendado ya que genera cuellos de botella.
+	 *             hilos corriendo en rpimer plano. Intercala con @Subscribe
 	 */
 	public void delayElement() {
 		Flux<Integer> range = Flux.range(1, 12).delayElements(Duration.ofSeconds(1))
 				.doOnNext(e -> log.info(e.toString()));
 		range.blockLast();
 	}
+
+	public void infiniteInterval() throws InterruptedException {
+		System.out.println("infiniteInterval();");
+		CountDownLatch latch = new CountDownLatch(1);
+
+		Flux.interval(Duration.ofSeconds(1)).doOnTerminate(latch::countDown).flatMap(i -> {
+			if (i >= 5) {
+				return Flux.error(new InterruptedException("Solo hasta 5"));
+			}
+			return Flux.just(i);
+		}).map(i -> "hola " + i).retry(2).subscribe(log::info, e -> log.error(e.getMessage()));
+
+		latch.await();
+	}
+
 }
