@@ -2,6 +2,8 @@ package com.jluque.reactor.app.service;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
@@ -224,8 +226,16 @@ public class ReactorService {
 		range.blockLast();
 	}
 
+	/**
+	 * rangos o intervalos infinitos controlados por un coutnDownLatch. Al llegar al
+	 * quinto elemento, lanzamos un error forzado emulando un error de conexion por
+	 * timeout. Ante errores, se controla el reintento.
+	 * 
+	 * @Subscribe: imprime, o lista general o error controlado.
+	 * 
+	 * @throws InterruptedException
+	 */
 	public void infiniteInterval() throws InterruptedException {
-		System.out.println("infiniteInterval();");
 		CountDownLatch latch = new CountDownLatch(1);
 
 		Flux.interval(Duration.ofSeconds(1)).doOnTerminate(latch::countDown).flatMap(i -> {
@@ -236,6 +246,38 @@ public class ReactorService {
 		}).map(i -> "hola " + i).retry(2).subscribe(log::info, e -> log.error(e.getMessage()));
 
 		latch.await();
+	}
+
+	/**
+	 * Intervalo infinito de tiempo usando Flux.create. manejamos un contador
+	 * manual, usamos Timer, cancelamos y completamos el flujo y controlamos error.
+	 * 
+	 * @Subscribe - a create y devuelve un flux de objetos.
+	 */
+	public void infiniteIntervalFromCreate() {
+		Flux.create(emitter -> {
+			Timer timer = new Timer();
+			timer.schedule(new TimerTask() {
+				private Integer contador = 0;
+
+				@Override
+				public void run() {
+					emitter.next(++contador);
+					if (contador == 10) {
+						timer.cancel();
+						emitter.complete();
+					}
+					if(contador == 5) {
+						timer.cancel();
+						emitter.error(new InterruptedException("Error en contador 5!"));
+					}
+				}
+			}, 1000, 500);
+		})
+		.doOnNext(e -> log.info(e.toString()))
+		.doOnError(e -> log.info(e.getMessage()))
+		.doOnComplete(() -> log.info("Done!"))
+		.subscribe();
 	}
 
 }

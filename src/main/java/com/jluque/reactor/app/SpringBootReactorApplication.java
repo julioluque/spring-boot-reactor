@@ -29,7 +29,8 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 //		service.interval();
 //		service.delayElement();
 
-		service.infiniteInterval();
+//		service.infiniteInterval();
+		service.infiniteIntervalFromCreate();
 		
 		
 	}
