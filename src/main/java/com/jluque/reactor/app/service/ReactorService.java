@@ -267,17 +267,13 @@ public class ReactorService {
 						timer.cancel();
 						emitter.complete();
 					}
-					if(contador == 5) {
+					if (contador == 5) {
 						timer.cancel();
 						emitter.error(new InterruptedException("Error en contador 5!"));
 					}
 				}
 			}, 1000, 500);
-		})
-		.doOnNext(e -> log.info(e.toString()))
-		.doOnError(e -> log.info(e.getMessage()))
-		.doOnComplete(() -> log.info("Done!"))
-		.subscribe();
+		}).subscribe(e -> log.info(e.toString()), e -> log.info(e.getMessage()), () -> log.info("Done"));
 	}
 
 }
