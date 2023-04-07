@@ -24,7 +24,8 @@ import reactor.core.publisher.Mono;
 public class ReactorServiceImpl implements ReactorService {
 	private static final Logger log = LoggerFactory.getLogger(ReactorServiceImpl.class);
 
-	public void iterableMap() throws Exception {
+	public void iterableMap() {
+
 		List<String> usuariosList = ReactorMapper.findUsers();
 
 		Flux<String> nombres = Flux.fromIterable(usuariosList);
@@ -33,13 +34,13 @@ public class ReactorServiceImpl implements ReactorService {
 				.map(nombre -> new UsuarioDto(nombre.split(" ")[0].toUpperCase(), nombre.split(" ")[1].toUpperCase()))
 				.filter(n -> n.getNombre().equalsIgnoreCase("Bruce")).doOnNext(usuario -> {
 					if (usuario == null)
-						throw new RuntimeException("Nombres no pueden ser vacios");
+						throw new NullPointerException("Nombres no pueden ser vacios");
 				}).map(usuario -> {
 					usuario.setNombre(usuario.getNombre().toLowerCase());
 					return usuario;
 				}).doOnNext(e -> log.info(e.getNombre().concat(", ").concat(e.getApellido())));
 
-		nombres.subscribe(e -> log.info("Subscribe nombres: " + e.toString()), error -> log.error(error.getMessage()),
+		nombres.subscribe(e -> log.info("Subscribe nombres: {}", e), error -> log.error(error.getMessage()),
 				new Runnable() {
 					@Override
 					public void run() {
@@ -47,8 +48,8 @@ public class ReactorServiceImpl implements ReactorService {
 					}
 				});
 
-		usuarioDtoFlux.subscribe(e -> log.info("Subscribe usuarios: " + e.toString()),
-				error -> log.error(error.getMessage()), new Runnable() {
+		usuarioDtoFlux.subscribe(e -> log.info("Subscribe usuarios: {}", e), error -> log.error(error.getMessage()),
+				new Runnable() {
 					@Override
 					public void run() {
 						log.info("Finalizo la ejecucion del observable");
@@ -56,7 +57,7 @@ public class ReactorServiceImpl implements ReactorService {
 				});
 	}
 
-	public void iterableFlatMap() throws Exception {
+	public void iterableFlatMap() {
 
 		List<String> usuariosList = ReactorMapper.findUsers();
 
@@ -74,16 +75,14 @@ public class ReactorServiceImpl implements ReactorService {
 				}).subscribe(u -> log.info("Subscribe: {}", u), error -> log.error(error.getMessage()));
 	}
 
-	public void usersfluxToMonoMapping() throws Exception {
+	public void usersfluxToMonoMapping() {
 
 		List<UsuarioDto> usuariosDtoList = ReactorMapper.findUserListDto();
 
-		Flux.fromIterable(usuariosDtoList).collectList().subscribe(lista -> {
-			lista.forEach(x -> log.info(x.toString()));
-		});
+		Flux.fromIterable(usuariosDtoList).collectList().subscribe(lista -> lista.forEach(x -> log.info(x.toString())));
 	}
 
-	public void iterableToStringMapping() throws Exception {
+	public void iterableToStringMapping() {
 		List<UsuarioDto> usuariosDtoList = ReactorMapper.findUserListDto();
 
 		Flux.fromIterable(usuariosDtoList).map(
@@ -94,7 +93,7 @@ public class ReactorServiceImpl implements ReactorService {
 					} else {
 						return Mono.empty();
 					}
-				}).map(nombre -> nombre.toLowerCase())
+				}).map(String::toLowerCase)
 				.subscribe(u -> log.info("Subscribe: {}", u), error -> log.error(error.getMessage()));
 	}
 
@@ -129,7 +128,7 @@ public class ReactorServiceImpl implements ReactorService {
 
 		Mono<ComentarioDto> comentarioDtoMono = Mono.fromCallable(ReactorMapper::cargarComentarios);
 
-		Mono<PosteoDto> posteoDtoMono = usuarioDtoMono.zipWith(comentarioDtoMono, (u, c) -> new PosteoDto(u, c));
+		Mono<PosteoDto> posteoDtoMono = usuarioDtoMono.zipWith(comentarioDtoMono, PosteoDto::new);
 
 		posteoDtoMono.subscribe(uc -> log.info(uc.toString()));
 	}
@@ -216,10 +215,12 @@ public class ReactorServiceImpl implements ReactorService {
 
 			@Override
 			public void onError(Throwable t) {
+				// TODO document why this method is empty
 			}
 
 			@Override
 			public void onComplete() {
+				// TODO document why this method is empty
 			}
 
 		});

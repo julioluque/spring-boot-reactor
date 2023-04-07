@@ -10,7 +10,7 @@ public interface ReactorService {
 	 * 
 	 * @throws Exception
 	 */
-	public void iterableMap() throws Exception;
+	public void iterableMap();
 
 	/**
 	 * example FlatMap. replcia del item iterableMap, pero usando flatMap, aplano
@@ -20,7 +20,7 @@ public interface ReactorService {
 	 * 
 	 * @throws Exception
 	 */
-	public void iterableFlatMap() throws Exception;
+	public void iterableFlatMap();
 
 	/**
 	 * Cambia objetos de Flux a Mono usando collectList
@@ -29,14 +29,14 @@ public interface ReactorService {
 	 * 
 	 * @throws Exception
 	 */
-	public void usersfluxToMonoMapping() throws Exception;
+	public void usersfluxToMonoMapping();
 
 	/**
 	 * Convierte un obejto Dto en una lista de String.
 	 * 
 	 * Subcribe y muestra resultados.
 	 */
-	public void iterableToStringMapping() throws Exception;
+	public void iterableToStringMapping();
 
 	/**
 	 * Lanzamos posteos de comentarios uniendo Usuarios y Comentarios usando
@@ -129,13 +129,13 @@ public interface ReactorService {
 	 * contadores y flags.
 	 * 
 	 */
-	public void backPresure()throws InterruptedException;
+	public void backPresure() throws InterruptedException;
 
 	/**
 	 * Igual que BackPresure, pero simplificamos la contrapresion con un limitRate.
 	 * 
 	 * @throws InterruptedException
 	 */
-	public void backPresureLimitRate()throws InterruptedException;
+	public void backPresureLimitRate() throws InterruptedException;
 
 }
