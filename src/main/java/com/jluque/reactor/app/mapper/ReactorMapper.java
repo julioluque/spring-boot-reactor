@@ -6,16 +6,17 @@ import java.util.List;
 import com.jluque.reactor.app.dto.ComentarioDto;
 import com.jluque.reactor.app.dto.UsuarioDto;
 
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class ReactorMapper {
 
-	public static UsuarioDto findUser() throws Exception {
-		return new UsuarioDto("Andres", "Fulano");
+	public static UsuarioDto findUser() {
+		return new UsuarioDto("Andres", "Raffo");
 	}
-	
-	public static List<String> findUsers() throws Exception {
+
+	public static List<String> findUsers() {
 		List<String> usuariosList = new ArrayList<>();
 		usuariosList.add("Andres Fulano");
 		usuariosList.add("Pedro Fulano");
@@ -29,7 +30,7 @@ public class ReactorMapper {
 		return usuariosList;
 	}
 
-	public static List<UsuarioDto> findUserListDto() throws Exception {
+	public static List<UsuarioDto> findUserListDto() {
 		List<UsuarioDto> usuariosDtoList = new ArrayList<>();
 		usuariosDtoList.add(new UsuarioDto("Andres", "Fulano"));
 		usuariosDtoList.add(new UsuarioDto("Pedro", "Fulano"));
@@ -42,8 +43,8 @@ public class ReactorMapper {
 		usuariosDtoList.add(new UsuarioDto("Bruce", "Willis"));
 		return usuariosDtoList;
 	}
-	
-	public static ComentarioDto cargarComentarios() throws Exception{
+
+	public static ComentarioDto cargarComentarios() {
 		ComentarioDto comentarioDtoList = new ComentarioDto();
 		comentarioDtoList.agregarComentario("primer comentario");
 		comentarioDtoList.agregarComentario("segundo comentario");
@@ -54,5 +55,5 @@ public class ReactorMapper {
 		comentarioDtoList.agregarComentario("siete!");
 		return comentarioDtoList;
 	}
-	
+
 }

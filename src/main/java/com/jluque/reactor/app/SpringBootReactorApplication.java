@@ -9,8 +9,7 @@ import com.jluque.reactor.app.service.ReactorService;
 @SpringBootApplication
 public class SpringBootReactorApplication implements CommandLineRunner {
 
-
-	private ReactorService servcie = new ReactorService();
+	private ReactorService service = new ReactorService();
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpringBootReactorApplication.class, args);
@@ -19,18 +18,25 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 
-//		servcie.iterableMap();
+//		service.iterableMap();
 
-//		servcie.iterableFlatMap();
+//		service.iterableFlatMap();
 //
-//		servcie.iterableToStringMapping();
+//		service.iterableToStringMapping();
 
-//		servcie.usersfluxToMonoMapping();
+//		service.usersfluxToMonoMapping();
 
-//		servcie.postCommentsFlatMap();
+//		service.postCommentsFlatMap();
 
-		servcie.postCommentsZipWith();
+//		service.postCommentsZipWith();
 
+//		service.postCommentsZipWithBifunction();
+		
+//		service.range();
+
+//		service.interval();
+
+		service.delayElement();
 	}
 
 }

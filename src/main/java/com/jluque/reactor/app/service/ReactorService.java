@@ -1,5 +1,6 @@
 package com.jluque.reactor.app.service;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -19,6 +20,14 @@ public class ReactorService {
 
 	private static final Logger log = LoggerFactory.getLogger(ReactorService.class);
 
+	/**
+	 * Example Map. carga lista de nombres los separa por nombre y apellido, filtra
+	 * y cambia mayusculas/minusculas.
+	 * 
+	 * Subscribe y muestra resutaldos
+	 * 
+	 * @throws Exception
+	 */
 	public void iterableMap() throws Exception {
 		List<String> usuariosList = ReactorMapper.findUsers();
 
@@ -51,6 +60,14 @@ public class ReactorService {
 				});
 	}
 
+	/**
+	 * example FlatMap. replcia del item iterableMap, pero usando flatMap, aplano
+	 * las listas y las filtro en el mismo flujo.
+	 * 
+	 * Al final subscribe y muestra resultados.
+	 * 
+	 * @throws Exception
+	 */
 	public void iterableFlatMap() throws Exception {
 
 		List<String> usuariosList = ReactorMapper.findUsers();
@@ -69,9 +86,14 @@ public class ReactorService {
 				}).subscribe(u -> log.info("Subscribe: {}", u), error -> log.error(error.getMessage()));
 	}
 
+	/**
+	 * Cambia objetos de Flux a Mono usando collectList
+	 * 
+	 * Subscribe y muestra resultadosO
+	 * 
+	 * @throws Exception
+	 */
 	public void usersfluxToMonoMapping() throws Exception {
-		log.info(new Object() {
-		}.getClass().getEnclosingMethod().getName());
 
 		List<UsuarioDto> usuariosDtoList = ReactorMapper.findUserListDto();
 
@@ -80,6 +102,11 @@ public class ReactorService {
 		});
 	}
 
+	/**
+	 * Convierte un obejto Dto en una lista de String.
+	 * 
+	 * Subcribe y muestra resultados.
+	 */
 	public void iterableToStringMapping() throws Exception {
 		List<UsuarioDto> usuariosDtoList = ReactorMapper.findUserListDto();
 
@@ -95,6 +122,12 @@ public class ReactorService {
 				.subscribe(u -> log.info("Subscribe: {}", u), error -> log.error(error.getMessage()));
 	}
 
+	/**
+	 * Lanzamos posteos de comentarios uniendo Usuarios y Comentarios usando
+	 * flatMap.
+	 * 
+	 * Subscribe e imprime resultados
+	 */
 	public void postCommentsFlatMap() {
 
 		Mono<UsuarioDto> usuarioDtoMono = Mono.fromCallable(ReactorMapper::findUser);
@@ -105,7 +138,35 @@ public class ReactorService {
 				.subscribe(uc -> log.info(uc.toString()));
 	}
 
+	/**
+	 * Misma situacion que postCommentsFlatMap pero usando zipWith Single parameter
+	 * para relacionar Usuarios y Comentarios en un dto que se llama posteDto
+	 * 
+	 * Subscribe e imprime resultados
+	 */
 	public void postCommentsZipWith() {
+
+		Mono<UsuarioDto> usuarioDtoMono = Mono.fromCallable(ReactorMapper::findUser);
+
+		Mono<ComentarioDto> comentarioDtoMono = Mono.fromCallable(ReactorMapper::cargarComentarios);
+
+		Mono<PosteoDto> posteoDtoMono = usuarioDtoMono.zipWith(comentarioDtoMono).map(t -> {
+			UsuarioDto u = t.getT1();
+			ComentarioDto c = t.getT2();
+			return new PosteoDto(u, c);
+		});
+
+		posteoDtoMono.subscribe(uc -> log.info(uc.toString()));
+	}
+
+	/**
+	 * Misma situacion que postCommentsFlatMap pero usando zipWith usando bifunciton
+	 * con dos parametros para relacionar Usuarios y Comentarios en un dto que se
+	 * llama posteDto
+	 * 
+	 * Subscribe e imprime resultados
+	 */
+	public void postCommentsZipWithBifunction() {
 
 		Mono<UsuarioDto> usuarioDtoMono = Mono.fromCallable(ReactorMapper::findUser);
 
@@ -116,4 +177,49 @@ public class ReactorService {
 		posteoDtoMono.subscribe(uc -> log.info(uc.toString()));
 	}
 
+	/**
+	 * Usa rango para decidir cantidad a imprimir. Combina dos flux usando zipWith.
+	 * 
+	 * @Flux1: lista de enteros y procesados.
+	 * @Flux2: usa un rango de dicha lista.
+	 * 
+	 * @Subscribe: lista general
+	 */
+	public void range() {
+		Flux.just(1, 2, 3, 4).map(x -> (x * 2))
+				.zipWith(Flux.range(0, 4), (a, b) -> String.format("PrimerFlux: %d - SegundoFlux: %d", a, b))
+				.subscribe(log::info);
+	}
+
+	/**
+	 * Usa un intervalo de Flux para frenar segun el rango para decidir cantidad a
+	 * imprimir. Combina dos flux usando zipWith.
+	 * 
+	 * @Flux1: un rango de conteo.
+	 * @Flux2: es un delay para cada elemento del rango.
+	 * 
+	 * @Subscribe: lista general
+	 */
+	public void interval() {
+		Flux<Integer> range = Flux.range(1, 12);
+		Flux<Long> delay = Flux.interval(Duration.ofSeconds(1));
+		range.zipWith(delay, (r, d) -> r).doOnNext(i -> log.info(i.toString())).subscribe();
+	}
+
+	/**
+	 * Misma situacion que @interval() Usa un intervalo con delayElements de Flux
+	 * para frenar segun el rango para decidir cantidad a imprimir.
+	 * 
+	 * @Flux: un rango de conteo. Agrega delay
+	 * 
+	 * @Subscribe: NoBoqueante, hilos corriendo en background. Interacalamos
+	 *             con @BlockLast.
+	 * @BlockLast: Bloqueante. hilos corriendo en rpimer plano. Intercala
+	 *             con @Subscribe
+	 */
+	public void delayElement() {
+		Flux<Integer> range = Flux.range(1, 12).delayElements(Duration.ofSeconds(1))
+				.doOnNext(e -> log.info(e.toString()));
+		range.blockLast();
+	}
 }
