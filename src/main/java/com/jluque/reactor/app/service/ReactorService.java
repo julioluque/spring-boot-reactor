@@ -117,9 +117,25 @@ public interface ReactorService {
 	public void infiniteIntervalFromCreate();
 
 	/**
-	 * Itera un rango y pide un log para ver el subscribre background.
+	 * Itera un rango y pide un log para ver el subscribre background. Recibe y
+	 * procesa el lote completo.
 	 * 
 	 */
 	public void backPresureSimple();
+
+	/**
+	 * Control de presion, manejo de contra presion. Implementamos el metodo
+	 * "onSubscribe" dentro del "subscribe" y manejamos los lotes a recibir con
+	 * contadores y flags.
+	 * 
+	 */
+	public void backPresure()throws InterruptedException;
+
+	/**
+	 * Igual que BackPresure, pero simplificamos la contrapresion con un limitRate.
+	 * 
+	 * @throws InterruptedException
+	 */
+	public void backPresureLimitRate()throws InterruptedException;
 
 }

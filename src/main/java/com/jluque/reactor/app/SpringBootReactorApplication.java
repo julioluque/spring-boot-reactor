@@ -19,20 +19,7 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 
-//		service.iterableMap();
-//		service.iterableFlatMap();
-//		service.iterableToStringMapping();
-//		service.usersfluxToMonoMapping();
-//		service.postCommentsFlatMap();
-//		service.postCommentsZipWith();
-//		service.postCommentsZipWithBifunction();
-//		service.range();
-//		service.interval();
-//		service.delayElement();
-//		service.infiniteInterval();
-//		service.infiniteIntervalFromCreate();
-
-		service.backPresureSimple();
+		service.backPresureLimitRate();
 
 	}
 

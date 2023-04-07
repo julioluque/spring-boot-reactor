@@ -6,6 +6,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -187,6 +189,44 @@ public class ReactorServiceImpl implements ReactorService {
 
 	public void backPresureSimple() {
 		Flux.range(1, 10).log().subscribe(x -> log.info(x.toString()));
+	}
+
+	public void backPresure() {
+		Flux.range(1, 10).log().subscribe(new Subscriber<Integer>() {
+
+			private Subscription s;
+			private long limite = 3;
+			private Integer consumido = 0;
+
+			@Override
+			public void onSubscribe(Subscription s) {
+				this.s = s;
+				s.request(limite);
+			}
+
+			@Override
+			public void onNext(Integer t) {
+				log.info(t.toString());
+				consumido++;
+				if (consumido == limite) {
+					s.request(limite);
+					consumido = 0;
+				}
+			}
+
+			@Override
+			public void onError(Throwable t) {
+			}
+
+			@Override
+			public void onComplete() {
+			}
+
+		});
+	}
+
+	public void backPresureLimitRate() throws InterruptedException {
+		Flux.range(1, 10).log().limitRate(3).subscribe();
 	}
 
 }
